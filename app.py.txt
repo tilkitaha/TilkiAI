@@ -1,0 +1,29 @@
+import streamlit as st
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+
+st.set_page_config(page_title="Tilki AI – Falcon", page_icon="🦊")
+st.title("🦊 Tilki AI – Falcon 1B ile Chatbot")
+
+@st.cache_resource
+def load_model():
+    model_id = "tiiuae/falcon-rw-1b"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True)
+    return tokenizer, model
+
+tokenizer, model = load_model()
+
+user_input = st.text_input("Tilki’ye bir şey sor:")
+
+if user_input:
+    inputs = tokenizer(user_input, return_tensors="pt")
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=150,
+        do_sample=True,
+        temperature=0.7,
+        top_p=0.9
+    )
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    st.write("🦊 Tilki:", response[len(user_input):].strip())
